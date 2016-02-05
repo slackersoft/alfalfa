@@ -1,0 +1,8 @@
+- hosts: all
+  tasks:
+    - name: Clone Bash it to ~/.bash_it
+      git:
+        repo: https://github.com/Bash-it/bash-it.git
+        dest: ~/.bash_it
+    - name: Install Bash it
+      command: ~/.bash_it/install.sh
