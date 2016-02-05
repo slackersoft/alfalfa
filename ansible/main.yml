@@ -7,10 +7,8 @@
         dest: ~/.alfalfa
         version: wip
 
-    - name: Clone Bash it to ~/.bash_it
-      git:
-        repo: https://github.com/Bash-it/bash-it.git
-        dest: ~/.bash_it
+    - name: Symlink Bash it
+      file: src=~/.alfalfa/.bash_it dest=~/.bash_it state=link
 
     - name: Create directories for enabling Bash it features
       file: path=~/.bash_it/{{ item }}/enabled state=directory
