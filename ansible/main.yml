@@ -1,8 +1,17 @@
 - hosts: all
   tasks:
+    - name: Clone Alfalfa repo to ~/.alfalfa
+      git:
+        repo: https://github.com/seattle-beach/alfalfa.git
+        dest: ~/.alfalfa
+        version: wip
+
     - name: Clone Bash it to ~/.bash_it
       git:
         repo: https://github.com/Bash-it/bash-it.git
         dest: ~/.bash_it
-    - name: Install Bash it
-      command: ~/.bash_it/install.sh
+
+    - name: Symlink all the things!
+      file: src=~/.alfalfa/{{ item.key }} dest={{ item.value }} state=link force=yes
+      with_dict:
+        .bash_profile: ~/.bash_profile

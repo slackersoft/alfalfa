@@ -11,5 +11,6 @@ solo][sprout-wrap].
 
 ```
 brew install ansible
+cd ansible
 ansible-playbook main.yml --ask-pass --ask-become-pass
 ```
