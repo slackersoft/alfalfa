@@ -1,5 +1,4 @@
 - hosts: all
-  vars:
   tasks:
     - name: Clone Alfalfa repo to ~/.alfalfa
       git:
@@ -26,3 +25,51 @@
       file: src=~/.alfalfa/{{ item.key }} dest={{ item.value }} state=link force=yes
       with_dict:
         .bash_profile: ~/.bash_profile
+        iterm2/com.googlecode.item2.plist: ~/Library/Preferences/com.googlecode.iterm2.plist
+
+    - name: Install formulae
+      homebrew: name={{ item }} state=present
+      with_items:
+        - ctags-exuberant
+        - ag
+        - chromedriver
+        - imagemagick
+        - node
+        - pstree
+        - qt
+        - ssh-copy-id
+        - tmux
+        - tree
+        - watch
+        - wget
+        - rbenv-binstubs
+
+    - name: Install casks
+      homebrew_cask: name={{ item }} state=present
+      with_items:
+        - firefox
+        - flycut
+        - rowanj-gitx
+        - github-desktop
+        - google-chrome
+        - google-drive
+        - google-hangouts
+        - macvim
+        - shiftit
+        - skype
+        - textmate
+        - vagrant
+        - virtualbox
+        - xquartz
+        - xscope
+
+    - name: Download addloginitem to /usr/local/bin
+      command: 
+      tags: [debug]
+
+    - name: Download addloginitem to /usr/local/bin
+      get_url:
+        url: https://github.com/downloads/pivotalexperimental/addLoginItem/addLoginItem 
+        dest: /usr/local/bin/addLoginItem
+        mode: 0755
+        validate_certs: no
