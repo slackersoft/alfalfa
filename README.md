@@ -9,6 +9,12 @@ solo][sprout-wrap].
 
 # Usage
 
+Pre-Ansible setup on the remote host:
+
+```
+# Install Homebrew
+```
+
 ```
 brew install ansible
 cd ansible

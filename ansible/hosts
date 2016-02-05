@@ -1,1 +1,1 @@
-alfalfa.local
+alfalfa.local ansible_user=pivotal become_user=pivotal
