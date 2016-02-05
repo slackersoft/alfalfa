@@ -5,6 +5,7 @@
         repo: https://github.com/seattle-beach/alfalfa.git
         dest: ~/.alfalfa
         version: wip
+      tags: [debug]
 
     - name: Symlink Bash it
       file: src=~/.alfalfa/.bash_it dest=~/.bash_it state=link
@@ -63,13 +64,22 @@
         - xquartz
         - xscope
 
-    - name: Download addloginitem to /usr/local/bin
-      command: 
-      tags: [debug]
+    - name: Add ShiftIt to login items
+      command: ~/.alfalfa/bin/addLoginItem ~/Applications/ShiftIt.app
+      become: yes
+      become_user: "{{ ansible_env.USER }}"
 
-    - name: Download addloginitem to /usr/local/bin
-      get_url:
-        url: https://github.com/downloads/pivotalexperimental/addLoginItem/addLoginItem 
-        dest: /usr/local/bin/addLoginItem
-        mode: 0755
-        validate_certs: no
+    - name: Check if ShiftIt is enabled in Accessibility whitelist
+      shell: echo "SELECT allowed FROM access WHERE client = 'org.shiftitapp.ShiftIt';" | sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db
+      become: yes
+      register: shiftit_out
+
+    - name: Add ShiftIt to Accessibility whitelist
+      shell: echo "INSERT INTO access VALUES('kTCCServiceAccessibility','org.shiftitapp.ShiftIt',0,1,1,NULL);" | sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db
+      become: yes
+      when: not shiftit_out.stdout
+
+    - name: Enable ShiftIt in Accessiblity whitelist
+      shell: echo "UPDATE access SET allowed = 1 WHERE client = 'org.shiftitapp.ShiftIt';" | sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db
+      become: yes
+      when: shiftit_out.stdout and shiftit_out.stdout != "1"
