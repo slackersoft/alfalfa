@@ -1,0 +1,10 @@
+osx_defaults:
+  - # keyboard repeat rate
+    key: KeyRepeat
+    type: int
+    value: 1
+
+  - # delay before keyboard repeat
+    key: InitialKeyRepeat
+    type: int
+    value: 15

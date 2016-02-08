@@ -1,4 +1,5 @@
 - hosts: all
+  vars_files: [osx_defaults.yml]
   tasks:
     - name: Clone Alfalfa repo to ~/.alfalfa
       git:
@@ -83,3 +84,12 @@
       shell: echo "UPDATE access SET allowed = 1 WHERE client = 'org.shiftitapp.ShiftIt';" | sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db
       become: yes
       when: shiftit_out.stdout and shiftit_out.stdout != "1"
+
+    - name: Set OS X defaults
+      osx_defaults:
+        domain: "{{ item.domain | default(omit) }}"
+        key: "{{ item.key }}"
+        type: "{{ item.type }}"
+        value: "{{ item.value }}"
+      with_items: osx_defaults
+      tags: [debug]
