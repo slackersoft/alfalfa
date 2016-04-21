@@ -1,77 +1,10 @@
 - hosts: all
-  # environment:
-  #   PATH: "/usr/local/bin:/Users/{{ ansible_env.USER }}/.rbenv/shims:{{ ansible_env.PATH }}"
   tasks:
-    - name: Ensure that the .ssh directory exists
-      file: path=~/.ssh state=directory
-
-    - name: Ensure that the known_hosts file exists
-      file: path=~/.ssh/known_hosts state=touch
-
-    - name: Clone Alfalfa and child repos
-      git:
-        repo: https://github.com/seattle-beach/{{ item }}.git
-        dest: ~/workspace/{{ item }}
-      ignore_errors: yes
-      with_items:
-        - alfalfa
-        - bash-it
-        - pivotal_ide_prefs
-        - vim-config
-
-    - name: Authenticate sudo for Homebrew installation
-      ping:
-      become: yes
-
-    - name: Fix permissions on /usr/local/bin
-      file: path=/usr/local/bin owner={{ ansible_env.USER }} state=directory
-      become: yes
-
-    - name: Install Homebrew
-      shell: /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" < /dev/null
-      args:
-        creates: /usr/local/bin/brew
-
-    - name: Clean up existing config files
-      command: mv {{ item }} {{ item }}.orig
-      args:
-        creates: "{{ item }}.orig"
-      with_items:
-        - ~/.bash_profile
-
-    - name: Symlink config files
-      file: src=~/workspace/alfalfa/dotfiles/{{ item }} dest=~/{{ item }} state=link
-      with_items:
-        - .bash_profile
-        - .bundle
-        - .gemrc
-        - .git-authors
-        - .gitconfig
-        - .gitignore_global
-
-    - name: Symlink .pairs
-      file: src=~/.git-authors dest=~/.pairs state=link
-
-    - name: Symlink child repositories
-      file: src=~/workspace/{{ item.key }} dest={{ item.value }} state=link
-      with_dict:
-        bash-it: ~/.bash_it
-        vim-config: ~/.vim
-        vim-config/vimrc: ~/.vimrc
-
-    - name: Install Vundle
-      git:
-       repo: https://github.com/VundleVim/Vundle.vim.git
-       dest: ~/.vim/bundle/Vundle.vim
-    - name: Install Vundle plugins
-      command: vim +PluginInstall +redraw +qall
-
     - name: Tap Homebrew repositories
       homebrew_tap: tap={{ item }}
       with_items:
         - caskroom/fonts
         - cloudfoundry/tap
-        - git-duet/tap
         - pivotal/tap
 
     - name: Update Homebrew
@@ -81,17 +14,13 @@
       homebrew: name={{ item }}
       with_items:
         - ag
-#        - android
         - ansible
         - cf-cli
         - cowsay
         - direnv
         - git
-        - git-duet
         - git-pair
         - gti
-        - node
-        - postgresql
         - rbenv
         - tmux
         - watch
@@ -108,52 +37,13 @@
         - font-sauce-code-powerline
         - font-source-code-pro
         - google-chrome
-        - google-drive
-        - intellij-idea
         - iterm2
         - lastpass
-        - java
         - macvim
-        - rubymine
         - shiftit
 
     - name: Install gi
       get_url: url=https://github.com/sgravrock/gi/releases/download/0.0.1/gi-0.0.1-macosx dest=/usr/local/bin/gi mode=0755
-
-    - name: Create LaunchAgents dir
-      file: path=~/Library/LaunchAgents state=directory
-    - name: Get Postgres launch agents
-      shell: ls /usr/local/opt/postgresql/*.plist
-      register: postgres_launch_agents
-    - name: Link Postgres launch agents
-      file: src={{ item }} dest=~/Library/LaunchAgents/{{ item | basename }} state=link
-      with_items: "{{ postgres_launch_agents.stdout_lines }}"
-
-    - name: Install Rubies
-      command: rbenv install {{ item }}
-      args:
-        creates: ~/.rbenv/versions/{{ item }}
-      with_items:
-        - 2.0.0-p648
-        - 2.2.3
-      environment:
-        PATH: "/usr/local/bin:/Users/{{ ansible_env.USER }}/.rbenv/shims:{{ ansible_env.PATH }}"
-    - name: Use Ruby 2.2.3
-      shell: rbenv global 2.2.3 && rbenv rehash
-      environment:
-        PATH: "/usr/local/bin:/Users/{{ ansible_env.USER }}/.rbenv/shims:{{ ansible_env.PATH }}"
-    - name: Install Ruby gems
-      command: gem install bundler
-      environment:
-        PATH: "/usr/local/bin:/Users/{{ ansible_env.USER }}/.rbenv/shims:{{ ansible_env.PATH }}"
-
-    - name: Install Pivotal IDE prefs
-      command: ./bin/ide_prefs --ide={{ item }} install
-      args:
-        chdir: ~/workspace/pivotal_ide_prefs/cli
-      with_items:
-        - intellij
-        - rubymine
 
     - name: Update OS X defaults
       my_defaults:
@@ -191,12 +81,6 @@
           type: int
           value: 15
 
-    - name: Download golang
-      get_url: url=https://storage.googleapis.com/golang/go1.6.darwin-amd64.tar.gz dest=/tmp/
-    - name: Extract go library
-      command: tar -C /usr/local -xzf /tmp/go1.6.darwin-amd64.tar.gz
-
-
     - name: Install dockutil
       homebrew: name=dockutil
     - name: Remove all icons from the Dock
@@ -210,7 +94,7 @@
       ignore_errors: yes
 
     - name: Set login items
-      command: ~/workspace/alfalfa/bin/addLoginItem ~/Applications/{{ item }}.app
+      command: ~/source/alfalfa/bin/addLoginItem /Applications/{{ item }}.app
       become: yes
       become_user: "{{ ansible_env.USER }}"
       with_items:
@@ -222,7 +106,7 @@
       become: yes
       register: shiftit_out
     - name: Add ShiftIt to Accessibility whitelist
-      shell: echo "INSERT INTO access VALUES('kTCCServiceAccessibility','org.shiftitapp.ShiftIt',0,1,1,NULL);" | sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db
+      shell: echo "INSERT INTO access VALUES('kTCCServiceAccessibility','org.shiftitapp.ShiftIt',0,1,1,NULL,NULL);" | sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db
       become: yes
       when: not shiftit_out.stdout
     - name: Enable ShiftIt in Accessiblity whitelist
